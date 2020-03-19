@@ -32,7 +32,6 @@ public class SQSConnect {
 	public SQSConnect() {
 		AWSCredentials credentials = null;
         try {
-            
         	credentials = new ProfileCredentialsProvider("default").getCredentials();
         } catch (Exception e) {
             throw new AmazonClientException(
