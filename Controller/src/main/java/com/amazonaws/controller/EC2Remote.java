@@ -36,13 +36,10 @@ import com.amazonaws.services.ec2.model.StopInstancesRequest;
 /**
 * Starts or stops and EC2 instance
 */
-public class StartStopInstance
+public class EC2Remote
 {
-  public static void startInstance(String instance_id)
+  public static void startInstance(AmazonEC2 ec2, String instance_id)
   {
-	  AWSCredentials credentials = null;
-	  credentials = new ProfileCredentialsProvider("default").getCredentials();
-	  final AmazonEC2 ec2 = AmazonEC2ClientBuilder.standard().withRegion(Regions.US_EAST_1).withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
       DryRunSupportedRequest<StartInstancesRequest> dry_request =
           () -> {
           StartInstancesRequest request = new StartInstancesRequest()
@@ -65,15 +62,12 @@ public class StartStopInstance
 
       ec2.startInstances(request);
 
-      System.out.printf("Successfully started instance %s", instance_id);
+      System.out.printf("Starting instance %s", instance_id);
+      System.out.println();
   }
 
-  public static void stopInstance(String instance_id)
+  public static void stopInstance(AmazonEC2 ec2, String instance_id)
   {
-	  AWSCredentials credentials = null;
-	  credentials = new ProfileCredentialsProvider("default").getCredentials();
-	  final AmazonEC2 ec2 = AmazonEC2ClientBuilder.standard().withRegion(Regions.US_EAST_1).withCredentials(new AWSStaticCredentialsProvider(credentials)).build();
-
       DryRunSupportedRequest<StopInstancesRequest> dry_request =
           () -> {
           StopInstancesRequest request = new StopInstancesRequest()
@@ -96,33 +90,5 @@ public class StartStopInstance
       ec2.stopInstances(request);
 
       System.out.printf("Successfully stop instance %s", instance_id);
-  }
-
-  public static void main(String[] args)
-  {
-      final String USAGE =
-          "To run this example, supply an instance id and start or stop\n" +
-          "Ex: StartStopInstance <instance-id> <start|stop>\n";
-
-      if (args.length != 2) {
-          System.out.println(USAGE);
-          System.exit(1);
-      }
-      
-      String instance_id = args[0];
-
-      boolean start;
-
-      if(args[1].equals("start")) {
-          start = true;
-      } else {
-          start = false;
-      }
-
-      if(start) {
-          startInstance(instance_id);
-      } else {
-          stopInstance(instance_id);
-      }
   }
 }

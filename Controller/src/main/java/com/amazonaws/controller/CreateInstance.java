@@ -45,15 +45,6 @@ public class CreateInstance
   {
 	  AWSCredentials credentials = null;
 	  credentials = new ProfileCredentialsProvider("default").getCredentials();
-      /*final String USAGE =
-          "To run this example, supply an instance name and AMI image id\n" +
-          "Ex: CreateInstance <instance-name> <ami-image-id>\n";
-
-      /*if (args.length != 2) {
-          System.out.println(USAGE);
-          System.exit(1);
-      }*/
-
       String name = instance_name;
       String ami_id = "ami-0903fd482d7208724";
       
