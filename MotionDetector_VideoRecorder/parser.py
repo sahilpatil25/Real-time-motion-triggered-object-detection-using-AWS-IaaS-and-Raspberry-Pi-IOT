@@ -12,5 +12,5 @@ def parseObject(outputFile):
             outputObject.write(object+'\n')
 
 if __name__ == '__main__':
-    outputFile = 'output.txt'#sys.argv[1]
+    outputFile = sys.argv[1]
     parseObject(outputFile)

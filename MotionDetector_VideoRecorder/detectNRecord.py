@@ -25,13 +25,11 @@ camera.exposure_mode = 'antishake'
 
 path1 = '/home/pi/Videos/'
 
-recordDuration = 100
-j=300
-ret=1
-
+recordDuration = 5
+j=500
+start=0
 while True:
     i = GPIO.input(sensor)
-    start = 0
     if i == 1:
         print("Motion detected")
         j = str(j)
@@ -48,17 +46,17 @@ while True:
             start = 1
             print("Processing video on Raspberry Pi")
             output = 'video_'+j+'.txt'
-            darknetThread = subprocess.Popen(['./darknet', path, output])
+            darknetThread = subprocess.Popen(['./darknet.sh', path, output])
             j = int(j) + 1
             continue
         darknetThreadPoll = darknetThread.poll()
         if darknetThreadPoll == None:
             print("Uploading video to cloud for processing")
-            uploader = subprocess.Popen(['java', '-jar', 'cse546upload-1.0.0.jar', video, path, '>', output])
+            subprocess.Popen(['./uploader.sh', video, path])
         else:
             print("Processing video on Raspberry Pi")
             output = 'video_'+j+'.txt'
-            darknetThread = subprocess.Popen(['./darknet', path, output])
+            darknetThread = subprocess.Popen(['./darknet.sh', path, output])
 
         j = int(j)+1
     else:
