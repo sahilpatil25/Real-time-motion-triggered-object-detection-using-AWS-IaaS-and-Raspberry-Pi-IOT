@@ -8,4 +8,5 @@ cmd="./darknet detector demo cfg/coco.data cfg/yolov3-tiny.cfg yolov3-tiny.weigh
 cd $darknetPath
 sudo $cmd $videoFolder | sudo tee $outputFile
 python parser.py $outputFile
+java -jar cse546upload-1.0.0.jar $outputFile $videoFolder
 
