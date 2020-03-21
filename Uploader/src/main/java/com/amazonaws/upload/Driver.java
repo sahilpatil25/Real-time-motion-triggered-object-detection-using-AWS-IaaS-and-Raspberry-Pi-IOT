@@ -14,13 +14,14 @@ public class Driver {
 		
 		String filename = args[0];
 		String filepath = args[1];
+		String fileCategory = args[2];
 		
 		File file = new File(filepath);
 		
-		s3obj.addToS3(filename, file);
-		s3obj.printAllS3();
-
-		sqsobj.addToQueue(filename);
+		s3obj.addToS3(filename, file, fileCategory);
+		//s3obj.printAllS3();
+		if(fileCategory.equals("video"))
+			sqsobj.addToQueue(filename);
 		//sqsobj.printQueue();
 	}
 	

@@ -46,11 +46,12 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 public class S3Connect {
 	
 	private static AmazonS3 s3;
-	private static String bucketName;
+	private static String video_bucket;
+	private static String output_bucket;
 	public S3Connect() {
 		AWSCredentials credentials = null;
         try {
-        	credentials = new ProfileCredentialsProvider("default").getCredentials();
+        	//credentials = new ProfileCredentialsProvider().getCredentials();
         } catch (Exception e) {
             throw new AmazonClientException(
                     "Cannot load the credentials from the credential profiles file. " +
@@ -59,17 +60,20 @@ public class S3Connect {
                     e);
         }
         s3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion("us-east-1")
                 .build();
+        //.withCredentials(new AWSStaticCredentialsProvider(credentials))
         
         System.out.println("===========================================");
         System.out.println("Getting Started with Amazon S3");
         System.out.println("===========================================\n");
         
-        bucketName = "cse546-s3-bucket-media";
-        System.out.println("Creating bucket " + bucketName + "\n");
-        s3.createBucket(bucketName);
+        video_bucket = "cse546-s3-video-bucket";
+        System.out.println("Creating bucket " + video_bucket + "\n");
+        s3.createBucket(video_bucket);
+        output_bucket = "cse546-s3-output-bucket";
+        System.out.println("Creating bucket " + output_bucket + "\n");
+        s3.createBucket(output_bucket);
         
 	}
 	
@@ -96,7 +100,12 @@ public class S3Connect {
         }
 	}
 	
-	public void addToS3(String key, File file) {
+	public void addToS3(String key, File file, String fileCategory) {
+		String bucketName;
+		if(fileCategory.equals("video"))
+			bucketName = video_bucket;
+		else
+			bucketName = output_bucket;
 		try {
 			System.out.println("Uploading a new object to S3 from a file\n");
 			s3.putObject(new PutObjectRequest(bucketName, key, file));
@@ -118,7 +127,7 @@ public class S3Connect {
 	
 	public S3ObjectInputStream getFromS3(String key) throws IOException {
 		System.out.println("Downloading an object");
-        S3Object object = s3.getObject(new GetObjectRequest(bucketName, key));
+        S3Object object = s3.getObject(new GetObjectRequest(video_bucket, key));
 		try {
 			System.out.println("Content-Type: "  + object.getObjectMetadata().getContentType());
 	        displayTextInputStream(object.getObjectContent());
@@ -144,7 +153,7 @@ public class S3Connect {
 		try {
 			System.out.println("Listing objects");
 	        ObjectListing objectListing = s3.listObjects(new ListObjectsRequest()
-	                .withBucketName(bucketName));
+	                .withBucketName(video_bucket));
 	        for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
 	            System.out.println(" - " + objectSummary.getKey() + "  " +
 	                               "(size = " + objectSummary.getSize() + ")");
@@ -169,7 +178,7 @@ public class S3Connect {
 	public void deleteFromS3(String key) {
 		try {
 			System.out.println("Deleting an object\n");
-			s3.deleteObject(bucketName, key);
+			s3.deleteObject(video_bucket, key);
 		} catch (AmazonServiceException ase) {
             System.out.println("Caught an AmazonServiceException, which means your request made it "
                     + "to Amazon S3, but was rejected with an error response for some reason.");
