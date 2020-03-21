@@ -31,6 +31,7 @@ ret=1
 
 while True:
     i = GPIO.input(sensor)
+    start = 0
     if i == 1:
         print("Motion detected")
         j = str(j)
@@ -42,12 +43,23 @@ while True:
         sleep(recordDuration)
         camera.stop_recording()
         print("Recording stopped")
-        subprocess.Popen(['java','-jar','cse546upload-1.0.0.jar',video,path,'>',output])
+        print("Recorded video" + str(j))
+        if not start:
+            start = 1
+            print("Processing video on Raspberry Pi")
+            output = 'video_'+j+'.txt'
+            darknetThread = subprocess.Popen(['./darknet', path, output])
+            j = int(j) + 1
+            continue
+        darknetThreadPoll = darknetThread.poll()
+        if darknetThreadPoll == None:
+            print("Uploading video to cloud for processing")
+            uploader = subprocess.Popen(['java', '-jar', 'cse546upload-1.0.0.jar', video, path, '>', output])
+        else:
+            print("Processing video on Raspberry Pi")
+            output = 'video_'+j+'.txt'
+            darknetThread = subprocess.Popen(['./darknet', path, output])
 
-        #ret = subprocess.call(['sudo', 'python', 'recordVideo.py', '30' ,j])
-        if ret!=0:
-            print("Error in recording video")
-        print("Recorded video"+str(j))
         j = int(j)+1
     else:
         print("No motion")
