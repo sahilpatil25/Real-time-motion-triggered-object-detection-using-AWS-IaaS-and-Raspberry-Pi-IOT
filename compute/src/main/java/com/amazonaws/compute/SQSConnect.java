@@ -32,17 +32,20 @@ public class SQSConnect {
 	private String queueURL;
 
 	public SQSConnect() {
-		AWSCredentials credentials = null;
-		try {
-			credentials = new ProfileCredentialsProvider("default").getCredentials();
-		} catch (Exception e) {
-			throw new AmazonClientException("Cannot load the credentials from the credential profiles file. "
-					+ "Please make sure that your credentials file is at the correct "
-					+ "location (C:\\Users\\kastu\\.aws\\credentials), and is in valid format.", e);
-		}
-
-		sqs = AmazonSQSClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
-				.withRegion(Regions.US_EAST_1).build();
+		/*
+		 * AWSCredentials credentials = null; try { credentials = new
+		 * ProfileCredentialsProvider("default").getCredentials(); } catch (Exception e)
+		 * { throw new
+		 * AmazonClientException("Cannot load the credentials from the credential profiles file. "
+		 * + "Please make sure that your credentials file is at the correct " +
+		 * "location (C:\\Users\\kastu\\.aws\\credentials), and is in valid format.",
+		 * e); }
+		 * 
+		 * sqs = AmazonSQSClientBuilder.standard().withCredentials(new
+		 * AWSStaticCredentialsProvider(credentials))
+		 * .withRegion(Regions.US_EAST_1).build();
+		 */
+		sqs = AmazonSQSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
 		String queueName = "job__fifo_queue.fifo";
 		boolean need_creation = false;
 		try {
