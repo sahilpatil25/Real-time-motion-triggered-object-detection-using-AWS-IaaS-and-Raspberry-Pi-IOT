@@ -10,6 +10,7 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
@@ -32,7 +33,7 @@ public class SQSConnect {
 	public SQSConnect() {
 		AWSCredentials credentials = null;
         try {
-        	credentials = new ProfileCredentialsProvider("default").getCredentials();
+        	//credentials = new ProfileCredentialsProvider().getCredentials();
         } catch (Exception e) {
             throw new AmazonClientException(
                     "Cannot load the credentials from the credential profiles file. " +
@@ -42,9 +43,9 @@ public class SQSConnect {
         }
         
         sqs = AmazonSQSClientBuilder.standard()
-        		.withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(Regions.US_EAST_1)
                 .build();
+        //.withCredentials(new AWSStaticCredentialsProvider(credentials))
         String queueName = "job__fifo_queue.fifo";
         boolean need_creation = false;
         try
