@@ -18,6 +18,7 @@ import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.DeleteQueueRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
+import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
@@ -32,19 +33,6 @@ public class SQSConnect {
 	private String queueURL;
 
 	public SQSConnect() {
-		/*
-		 * AWSCredentials credentials = null; try { credentials = new
-		 * ProfileCredentialsProvider("default").getCredentials(); } catch (Exception e)
-		 * { throw new
-		 * AmazonClientException("Cannot load the credentials from the credential profiles file. "
-		 * + "Please make sure that your credentials file is at the correct " +
-		 * "location (C:\\Users\\kastu\\.aws\\credentials), and is in valid format.",
-		 * e); }
-		 * 
-		 * sqs = AmazonSQSClientBuilder.standard().withCredentials(new
-		 * AWSStaticCredentialsProvider(credentials))
-		 * .withRegion(Regions.US_EAST_1).build();
-		 */
 		sqs = AmazonSQSClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
 		String queueName = "job__fifo_queue.fifo";
 		boolean need_creation = false;
@@ -56,7 +44,7 @@ public class SQSConnect {
 		}
 
 		System.out.println("===========================================");
-		System.out.println("Getting Started with Amazon SQS");
+		System.out.println("Initializing SQS Client");
 		System.out.println("===========================================\n");
 
 		try {
@@ -73,7 +61,7 @@ public class SQSConnect {
 				 * MessageDeduplicationId based on the content.
 				 */
 				attributes.put("ContentBasedDeduplication", "true");
-				attributes.put("ReceiveMessageWaitTimeSeconds", "1");
+				//attributes.put("ReceiveMessageWaitTimeSeconds", "1");
 
 				// The FIFO queue name must end with the .FIFO suffix.
 				final CreateQueueRequest createQueueRequest = new CreateQueueRequest(queueName)
@@ -81,9 +69,9 @@ public class SQSConnect {
 				queueURL = sqs.createQueue(createQueueRequest).getQueueUrl();
 			} else {
 				System.out.println("Queue " + queueName + " exists.");
-				SetQueueAttributesRequest set_attrs_request = new SetQueueAttributesRequest()
-						.withQueueUrl(this.queueURL).addAttributesEntry("ReceiveMessageWaitTimeSeconds", "1");
-				sqs.setQueueAttributes(set_attrs_request);
+//				SetQueueAttributesRequest set_attrs_request = new SetQueueAttributesRequest()
+//						.withQueueUrl(this.queueURL).addAttributesEntry("ReceiveMessageWaitTimeSeconds", "1");
+//				sqs.setQueueAttributes(set_attrs_request);
 			}
 		} catch (AmazonServiceException ase) {
 			System.out.println("Caught an AmazonServiceException, which means your request made it "
@@ -168,12 +156,12 @@ public class SQSConnect {
 	public String getFromQueue() {
 		String key = "";
 		try {
-			ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(this.queueURL)
-					.withWaitTimeSeconds(3);
-			receiveMessageRequest.setMaxNumberOfMessages(10);
-			receiveMessageRequest.withMaxNumberOfMessages(10).withWaitTimeSeconds(20);
-			List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
-			System.out.println("Getting a message.\n" + messages.size());
+			//ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(this.queueURL)
+				//	.withWaitTimeSeconds(3);
+			//receiveMessageRequest.setMaxNumberOfMessages(10);
+			//receiveMessageRequest.withMaxNumberOfMessages(10).withWaitTimeSeconds(20);
+			List<Message> messages = sqs.receiveMessage(this.queueURL).getMessages();
+			System.out.println("Getting a message");
 			key = messages.get(0).getBody();
 			String messageReceiptHandle = messages.get(0).getReceiptHandle();
 			sqs.deleteMessage(new DeleteMessageRequest(this.queueURL, messageReceiptHandle));
@@ -191,7 +179,6 @@ public class SQSConnect {
 					+ "being able to access the network.");
 			System.out.println("Error Message: " + ace.getMessage());
 		}
-
 		return key;
 	}
 
@@ -208,30 +195,65 @@ public class SQSConnect {
 		 * return messages;
 		 */
 		
-		  int len = 0; try { ReceiveMessageRequest receiveMessageRequest = new
-		  ReceiveMessageRequest(this.queueURL);
-		  receiveMessageRequest.setMaxNumberOfMessages(10);
-		  receiveMessageRequest.withMaxNumberOfMessages(10).withWaitTimeSeconds(20);
-		  List<Message> messages =
-		  sqs.receiveMessage(receiveMessageRequest).getMessages(); len =
-		  messages.size(); System.out.println("Current queue length - " + len); } catch
-		  (AmazonServiceException ase) { System.out.
-		  println("Caught an AmazonServiceException, which means your request made it "
-		  + "to Amazon SQS, but was rejected with an error response for some reason.");
-		  System.out.println("Error Message:    " + ase.getMessage());
-		  System.out.println("HTTP Status Code: " + ase.getStatusCode());
-		  System.out.println("AWS Error Code:   " + ase.getErrorCode());
-		  System.out.println("Error Type:       " + ase.getErrorType());
-		  System.out.println("Request ID:       " + ase.getRequestId()); } catch
-		  (AmazonClientException ace) { System.out.
-		  println("Caught an AmazonClientException, which means the client encountered "
-		  +
-		  "a serious internal problem while trying to communicate with SQS, such as not "
-		  + "being able to access the network."); System.out.println("Error Message: "
-		  + ace.getMessage()); }
-		  
+		  int len = 0; 
+		  try 
+		  { 
+			  ReceiveMessageRequest receiveMessageRequest = new
+			  ReceiveMessageRequest(this.queueURL);
+			  receiveMessageRequest.setMaxNumberOfMessages(10);
+			  receiveMessageRequest.withMaxNumberOfMessages(10).withWaitTimeSeconds(20);
+			  List<Message> messages =
+			  sqs.receiveMessage(receiveMessageRequest).getMessages(); 
+			  len = messages.size(); 
+			  System.out.println("Current queue length - " + len);
+		  } 
+		  catch(AmazonServiceException ase) 
+		  { 
+			  System.out.println("Caught an AmazonServiceException, which means your request made it "
+					  + "to Amazon SQS, but was rejected with an error response for some reason.");
+			  System.out.println("Error Message:    " + ase.getMessage());
+			  System.out.println("HTTP Status Code: " + ase.getStatusCode());
+			  System.out.println("AWS Error Code:   " + ase.getErrorCode());
+			  System.out.println("Error Type:       " + ase.getErrorType());
+			  System.out.println("Request ID:       " + ase.getRequestId());
+		  } 
+		  catch(AmazonClientException ace) 
+		  { 
+			  System.out.println("Caught an AmazonClientException, which means the client encountered "+
+					  "a serious internal problem while trying to communicate with SQS, such as not "
+					  + "being able to access the network."); System.out.println("Error Message: "+ ace.getMessage());
+		  }
 		  return len;
-		 
+	}
+	
+	public int getQueueSize() {
+		  int len = 0; 
+		  try 
+		  { 
+			  GetQueueAttributesRequest getQueueAttributesRequest = new GetQueueAttributesRequest(this.queueURL).withAttributeNames("ApproximateNumberOfMessages");
+			  GetQueueAttributesResult getQueueAttributesResult = sqs.getQueueAttributes(getQueueAttributesRequest);
+			  len = Integer.parseInt(getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessages"));
+			  //System.out.println(String.format("The number of messages on the queue: %s",getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessages")));
+			  //System.out.println(String.format("The number of messages in flight: %s", getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessagesNotVisible")));
+			  System.out.println("Current queue length - " + len);
+		  } 
+		  catch(AmazonServiceException ase) 
+		  { 
+			  System.out.println("Caught an AmazonServiceException, which means your request made it "
+					  + "to Amazon SQS, but was rejected with an error response for some reason.");
+			  System.out.println("Error Message:    " + ase.getMessage());
+			  System.out.println("HTTP Status Code: " + ase.getStatusCode());
+			  System.out.println("AWS Error Code:   " + ase.getErrorCode());
+			  System.out.println("Error Type:       " + ase.getErrorType());
+			  System.out.println("Request ID:       " + ase.getRequestId());
+		  } 
+		  catch(AmazonClientException ace) 
+		  { 
+			  System.out.println("Caught an AmazonClientException, which means the client encountered "+
+					  "a serious internal problem while trying to communicate with SQS, such as not "
+					  + "being able to access the network."); System.out.println("Error Message: "+ ace.getMessage());
+		  }
+		  return len;
 	}
 
 	public void deleteFromQueue() {

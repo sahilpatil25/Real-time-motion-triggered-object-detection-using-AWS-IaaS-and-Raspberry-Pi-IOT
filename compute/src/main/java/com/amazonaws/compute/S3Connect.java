@@ -48,53 +48,23 @@ public class S3Connect {
 	private static String videoBucketName;
 	private static String outputBucketName;
 	
-	public S3Connect() {
-		/*
-		 * AWSCredentials credentials = null; try { credentials = new
-		 * ProfileCredentialsProvider("default").getCredentials(); } catch (Exception e)
-		 * { throw new AmazonClientException(
-		 * "Cannot load the credentials from the credential profiles file. " +
-		 * "Please make sure that your credentials file is at the correct " +
-		 * "location (C:\\Users\\kastu\\.aws\\credentials), and is in valid format.",
-		 * e); }
-		 * 
-		 * try {
-		 * 
-		 * } catch (AmazonServiceException ase) { System.out.
-		 * println("Caught an AmazonServiceException, which means your request made it "
-		 * + "to Amazon S3, but was rejected with an error response for some reason.");
-		 * System.out.println("Error Message:    " + ase.getMessage());
-		 * System.out.println("HTTP Status Code: " + ase.getStatusCode());
-		 * System.out.println("AWS Error Code:   " + ase.getErrorCode());
-		 * System.out.println("Error Type:       " + ase.getErrorType());
-		 * System.out.println("Request ID:       " + ase.getRequestId()); } catch
-		 * (AmazonClientException ace) { System.out.
-		 * println("Caught an AmazonClientException, which means the client encountered "
-		 * + "a serious internal problem while trying to communicate with S3, " +
-		 * "such as not being able to access the network.");
-		 * System.out.println("Error Message: " + ace.getMessage()); }
-		 * 
-		 * s3 = AmazonS3ClientBuilder.standard() .withCredentials(new
-		 * AWSStaticCredentialsProvider(credentials)) .withRegion("us-east-1") .build();
-		 */
-		
+	public S3Connect() 
+	{
 		s3 = AmazonS3ClientBuilder.standard().withRegion("us-east-1") .build();
         
         System.out.println("===========================================");
-        System.out.println("Getting Started with Amazon S3");
-        System.out.println("===========================================\n");
+        System.out.println("Initializing S3 Client");
+        System.out.println("===========================================");
         
         videoBucketName = "cse546-s3-video-bucket";
         outputBucketName = "cse546-s3-output-bucket";
-        System.out.println("Creating bucket " + videoBucketName + "\n");
+        
         s3.createBucket(videoBucketName);
-        
-        System.out.println("Creating bucket " + outputBucketName + "\n");
         s3.createBucket(outputBucketName);
-        
 	}
 	
-	public void listBuckets() {
+	public void listBuckets() 
+	{
 		try {
 			System.out.println("Listing buckets");
 	        for (Bucket bucket : s3.listBuckets()) {
@@ -137,31 +107,15 @@ public class S3Connect {
         }
 	}
 	
-	public S3ObjectInputStream getFromS3(String key) throws IOException {
+	public S3ObjectInputStream getFromS3(String key) throws IOException 
+	{
 		System.out.println("Downloading an object");
         S3Object object = s3.getObject(new GetObjectRequest(videoBucketName, key));
-		try {
-			System.out.println("Content-Type: "  + object.getObjectMetadata().getContentType());
-	        displayTextInputStream(object.getObjectContent());
-		} catch (AmazonServiceException ase) {
-            System.out.println("Caught an AmazonServiceException, which means your request made it "
-                    + "to Amazon S3, but was rejected with an error response for some reason.");
-            System.out.println("Error Message:    " + ase.getMessage());
-            System.out.println("HTTP Status Code: " + ase.getStatusCode());
-            System.out.println("AWS Error Code:   " + ase.getErrorCode());
-            System.out.println("Error Type:       " + ase.getErrorType());
-            System.out.println("Request ID:       " + ase.getRequestId());
-        } catch (AmazonClientException ace) {
-            System.out.println("Caught an AmazonClientException, which means the client encountered "
-                    + "a serious internal problem while trying to communicate with S3, "
-                    + "such as not being able to access the network.");
-            System.out.println("Error Message: " + ace.getMessage());
-        }
-	    
 		return object.getObjectContent();
 	}
 	
-	public void printAllS3() {
+	public void printAllS3() 
+	{
 		try {
 			System.out.println("Listing objects");
 	        ObjectListing objectListing = s3.listObjects(new ListObjectsRequest()
@@ -206,16 +160,4 @@ public class S3Connect {
             System.out.println("Error Message: " + ace.getMessage());
         }
 	}
-
-    private static void displayTextInputStream(InputStream input) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        while (true) {
-            String line = reader.readLine();
-            if (line == null) break;
-
-            System.out.println("    " + line);
-        }
-        System.out.println();
-    }
-
 }

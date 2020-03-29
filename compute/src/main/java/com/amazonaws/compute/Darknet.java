@@ -8,7 +8,7 @@ public class Darknet
     public static void main(String[] args) {
         ProcessBuilder processBuilder = new ProcessBuilder();
         String argument = args[0];
-        processBuilder.command("/home/ubuntu/demo/darknet_ec2.sh",argument);
+        processBuilder.command("/home/ubuntu/darknet/darknet.sh",argument);
 
         try {
             Process process = processBuilder.start();
@@ -28,7 +28,7 @@ public class Darknet
                 System.out.println(output);
                 System.exit(0);
             } else {
-                //abnormal...
+            	System.out.println("Abnormal!");
             }
         } catch (IOException e) {
             e.printStackTrace();
