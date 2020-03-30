@@ -45,7 +45,6 @@ public class Driver {
 		  shutdown();
 	}
 	public void compute() throws InterruptedException {
-		//TimeUnit.SECONDS.sleep(10);
 		String key = sqsobj.getFromQueue();
 		try {
 			System.out.println("Processing " + key);
@@ -54,7 +53,7 @@ public class Driver {
 			String path = "/home/ubuntu/videos/" + key;
 			System.out.println("Video downloaded at : "+path);
 			String[] temp = key.split("\\.");
-			//System.out.println("Acquired key split " + temp.length);
+
 			String newKey = temp[0];
 
 			System.out.println("Preparing to run YOLO on: "+newKey);
@@ -75,15 +74,17 @@ public class Driver {
                 System.out.println("Success!");
                 System.out.println("Parsing results");
 
-        		String[] first = output.toString().split("FPS:");
+        		String[] first = output.toString().split("\\n");
         		Set<String> set = new HashSet<String>();
         		Pattern p = Pattern.compile("[a-z]+$");
         		for(String x : first) 
         		{
-        			String[] second = x.split(":");
-        			Matcher m = p.matcher(second[1].toLowerCase());
-        			if(second.length > 0 && m.find())
-        				set.add(second[1].toLowerCase());
+        			if(x.contains("%")) {
+	        			String[] second = x.split(":");
+	        			//Matcher m = p.matcher(second[1].toLowerCase());
+	        			//if(second.length > 0 && m.find())
+	        			set.add(second[0].toLowerCase());
+        			}
         		}
                 System.out.println("Parsing done!");
 
@@ -102,7 +103,7 @@ public class Driver {
 	    		}
                 System.out.println("Uploading output to S3");
 
-	        	s3obj.addToS3(newKey + ".txt", createResultFile(result.toString()));
+                s3obj.addToS3(newKey, result.toString());
                 System.out.println("Output uploaded on S3");
 
 				/*
@@ -127,17 +128,6 @@ public class Driver {
 			e.printStackTrace();
 		}
 	}
-	
-	private static File createResultFile(String result) throws IOException {
-        File file = File.createTempFile("result", ".txt");
-        file.deleteOnExit();
-
-        Writer writer = new OutputStreamWriter(new FileOutputStream(file));
-        writer.write(result);
-        writer.close();
-
-        return file;
-    }
 	
 	public static void shutdown() throws IOException
 	{

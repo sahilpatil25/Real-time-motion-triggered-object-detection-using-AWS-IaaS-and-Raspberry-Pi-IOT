@@ -87,10 +87,10 @@ public class S3Connect {
         }
 	}
 	
-	public void addToS3(String key, File file) {
+	public void addToS3(String key, String result) {
 		try {
 			System.out.println("Uploading a new object to S3 from a file\n");
-			s3.putObject(new PutObjectRequest(outputBucketName, key, file));
+			s3.putObject(outputBucketName, key, result);
 		} catch (AmazonServiceException ase) {
             System.out.println("Caught an AmazonServiceException, which means your request made it "
                     + "to Amazon S3, but was rejected with an error response for some reason.");
