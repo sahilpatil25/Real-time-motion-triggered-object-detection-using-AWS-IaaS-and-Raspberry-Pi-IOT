@@ -39,7 +39,7 @@ public class Driver {
 			}
 			else
 			{
-				Thread.sleep(3000);
+				Thread.sleep(5000);
 			}
 		}
 	}
