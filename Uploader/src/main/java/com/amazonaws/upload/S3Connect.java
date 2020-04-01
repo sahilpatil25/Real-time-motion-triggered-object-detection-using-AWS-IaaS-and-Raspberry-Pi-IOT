@@ -1,38 +1,13 @@
 package com.amazonaws.upload;
-/*
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
- */
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.UUID;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -49,23 +24,13 @@ public class S3Connect {
 	private static String video_bucket;
 	private static String output_bucket;
 	public S3Connect() {
-		AWSCredentials credentials = null;
-        try {
-        	//credentials = new ProfileCredentialsProvider().getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. " +
-                    "Please make sure that your credentials file is at the correct " +
-                    "location (C:\\Users\\kastu\\.aws\\credentials), and is in valid format.",
-                    e);
-        }
+		
         s3 = AmazonS3ClientBuilder.standard()
                 .withRegion("us-east-1")
                 .build();
-        //.withCredentials(new AWSStaticCredentialsProvider(credentials))
         
         System.out.println("===========================================");
-        System.out.println("Getting Started with Amazon S3");
+        System.out.println("Initializing S3 Client");
         System.out.println("===========================================\n");
         
         video_bucket = "cse546-s3-video-bucket";
@@ -74,7 +39,6 @@ public class S3Connect {
         output_bucket = "cse546-s3-output-bucket";
         System.out.println("Creating bucket " + output_bucket + "\n");
         s3.createBucket(output_bucket);
-        
 	}
 	
 	public void listBuckets() {
@@ -102,7 +66,7 @@ public class S3Connect {
 	
 	public void addToS3(String key, File file, String fileCategory) {
 		String bucketName;
-		if(fileCategory.equals("video"))
+		if(fileCategory.equalsIgnoreCase("video") || fileCategory.equalsIgnoreCase("pi"))
 			bucketName = video_bucket;
 		else
 			bucketName = output_bucket;

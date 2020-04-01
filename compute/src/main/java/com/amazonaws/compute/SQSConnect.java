@@ -1,6 +1,5 @@
 package com.amazonaws.compute;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,15 +7,11 @@ import java.util.Map.Entry;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
-import com.amazonaws.services.sqs.model.DeleteQueueRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.Message;
@@ -24,11 +19,13 @@ import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
-import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
-//snippet-start:[sqs.java2.sqs_example.main]
+/*
+ * Class for AWS SQS Operations
+ */
+
 public class SQSConnect {
-
+	
 	private static AmazonSQS sqs;
 	private String queueURL;
 
@@ -42,7 +39,7 @@ public class SQSConnect {
 			System.out.println("Queue " + queueName + " does not exist. Need to create a new queue.");
 			need_creation = true;
 		}
-
+		
 		System.out.println("===========================================");
 		System.out.println("Initializing SQS Client");
 		System.out.println("===========================================\n");
@@ -55,23 +52,15 @@ public class SQSConnect {
 
 				// A FIFO queue must have the FifoQueue attribute set to true.
 				attributes.put("FifoQueue", "true");
-
-				/*
-				 * If the user doesn't provide a MessageDeduplicationId, generate a
-				 * MessageDeduplicationId based on the content.
-				 */
+				
 				attributes.put("ContentBasedDeduplication", "true");
 				//attributes.put("ReceiveMessageWaitTimeSeconds", "1");
-
-				// The FIFO queue name must end with the .FIFO suffix.
+				
 				final CreateQueueRequest createQueueRequest = new CreateQueueRequest(queueName)
 						.withAttributes(attributes);
 				queueURL = sqs.createQueue(createQueueRequest).getQueueUrl();
 			} else {
 				System.out.println("Queue " + queueName + " exists.");
-//				SetQueueAttributesRequest set_attrs_request = new SetQueueAttributesRequest()
-//						.withQueueUrl(this.queueURL).addAttributesEntry("ReceiveMessageWaitTimeSeconds", "1");
-//				sqs.setQueueAttributes(set_attrs_request);
 			}
 		} catch (AmazonServiceException ase) {
 			System.out.println("Caught an AmazonServiceException, which means your request made it "
@@ -156,11 +145,9 @@ public class SQSConnect {
 	public String getFromQueue() {
 		String key = "";
 		try {
-			//ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(this.queueURL)
-				//	.withWaitTimeSeconds(3);
-			//receiveMessageRequest.setMaxNumberOfMessages(10);
-			//receiveMessageRequest.withMaxNumberOfMessages(10).withWaitTimeSeconds(20);
 			List<Message> messages = sqs.receiveMessage(this.queueURL).getMessages();
+			if(messages.size() == 0)
+				return null;
 			System.out.println("Getting a message");
 			key = messages.get(0).getBody();
 			String messageReceiptHandle = messages.get(0).getReceiptHandle();
@@ -178,52 +165,10 @@ public class SQSConnect {
 					+ "a serious internal problem while trying to communicate with SQS, such as not "
 					+ "being able to access the network.");
 			System.out.println("Error Message: " + ace.getMessage());
+		} catch(IndexOutOfBoundsException iobe) {
+			return null;
 		}
 		return key;
-	}
-
-	public int getQueueLength() {
-		/*
-		 * List<String> attributeNames = new ArrayList<>(); attributeNames.add("All");
-		 * // list the attributes of the queue we are interested in
-		 * GetQueueAttributesRequest request = new GetQueueAttributesRequest(queueURL);
-		 * request.setAttributeNames(attributeNames); Map<String, String> attributes =
-		 * sqs.getQueueAttributes(request) .getAttributes(); int messages =
-		 * Integer.parseInt(attributes .get("ApproximateNumberOfMessages"));
-		 * System.out.println("Number of messages :" + messages);
-		 * 
-		 * return messages;
-		 */
-		
-		  int len = 0; 
-		  try 
-		  { 
-			  ReceiveMessageRequest receiveMessageRequest = new
-			  ReceiveMessageRequest(this.queueURL);
-			  receiveMessageRequest.setMaxNumberOfMessages(10);
-			  receiveMessageRequest.withMaxNumberOfMessages(10).withWaitTimeSeconds(20);
-			  List<Message> messages =
-			  sqs.receiveMessage(receiveMessageRequest).getMessages(); 
-			  len = messages.size(); 
-			  System.out.println("Current queue length - " + len);
-		  } 
-		  catch(AmazonServiceException ase) 
-		  { 
-			  System.out.println("Caught an AmazonServiceException, which means your request made it "
-					  + "to Amazon SQS, but was rejected with an error response for some reason.");
-			  System.out.println("Error Message:    " + ase.getMessage());
-			  System.out.println("HTTP Status Code: " + ase.getStatusCode());
-			  System.out.println("AWS Error Code:   " + ase.getErrorCode());
-			  System.out.println("Error Type:       " + ase.getErrorType());
-			  System.out.println("Request ID:       " + ase.getRequestId());
-		  } 
-		  catch(AmazonClientException ace) 
-		  { 
-			  System.out.println("Caught an AmazonClientException, which means the client encountered "+
-					  "a serious internal problem while trying to communicate with SQS, such as not "
-					  + "being able to access the network."); System.out.println("Error Message: "+ ace.getMessage());
-		  }
-		  return len;
 	}
 	
 	public int getQueueSize() {
@@ -233,8 +178,6 @@ public class SQSConnect {
 			  GetQueueAttributesRequest getQueueAttributesRequest = new GetQueueAttributesRequest(this.queueURL).withAttributeNames("ApproximateNumberOfMessages");
 			  GetQueueAttributesResult getQueueAttributesResult = sqs.getQueueAttributes(getQueueAttributesRequest);
 			  len = Integer.parseInt(getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessages"));
-			  //System.out.println(String.format("The number of messages on the queue: %s",getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessages")));
-			  //System.out.println(String.format("The number of messages in flight: %s", getQueueAttributesResult.getAttributes().get("ApproximateNumberOfMessagesNotVisible")));
 			  System.out.println("Current queue length - " + len);
 		  } 
 		  catch(AmazonServiceException ase) 
